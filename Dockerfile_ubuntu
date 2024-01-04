@@ -1,0 +1,33 @@
+ARG UBUNTU_VERSION=jammy
+
+FROM aprimediet/ubuntu:${UBUNTU_VERSION}
+LABEL maintainer="<Muhamad Aditya Prima> aprimediet@gmail.com"
+
+ARG NVM_VERSION=0.39.5
+ARG NODE_VERSION=18.19.0
+
+ENV HOME /root
+ENV NVM_DIR $HOME/.nvm
+
+# UPGRADE PACKAGES FIRST
+RUN --mount=type=cache,target=/var/cache/apt/archives \
+    apt -y update && apt -y upgrade
+
+# GET LATEST NVM
+ADD https://raw.githubusercontent.com/nvm-sh/nvm/v${NVM_VERSION}/install.sh /tmp
+
+# INSTALL NVM AND DESIGNATED NODE VERSION
+RUN bash /tmp/install.sh && \
+    . $NVM_DIR/nvm.sh && \
+    nvm install v${NODE_VERSION} && \
+    nvm alias default v${NODE_VERSION} && \
+    nvm use default
+
+ENV NODE_PATH $NVM_DIR/versions/node/v${NODE_VERSION}/lib/node_modules
+ENV PATH $PATH:$NVM_DIR/versions/node/v${NODE_VERSION}/bin
+
+# INSTALL YARN
+RUN npm i -g yarn
+
+# CLEAR APT CACHE
+RUN apt -y clean && rm -f /tmp/*

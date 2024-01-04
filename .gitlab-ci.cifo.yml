@@ -1,0 +1,56 @@
+stages:
+  - build
+
+.build:
+  image: docker:20.10.16
+  services:
+    - name: docker:20.10.16-dind
+      alias: docker
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+    DOCKER_TLS_CERTDIR: "/certs"
+    DOCKER_TLS_VERIFY: 1
+    DOCKER_CERT_PATH: "/certs/client"
+    DOCKER_DRIVER: "overlay"
+  before_script:
+    - "docker login ${CI_REGISTRY} -u gitlab-ci-token -p ${CI_JOB_TOKEN}"
+  after_script:
+    - "docker logout ${CI_REGISTRY}"
+  
+build_cifo_20:
+  stage: build
+  extends: .build
+  only:
+    - master
+  script:
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_ubuntu --build-arg="UBUNTU_VERSION=jammy" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" --build-arg="NODE_VERSION=20.10.0" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:20-ubuntu -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:20 .
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_alpine --build-arg="ALPINE_VERSION=3.19" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:20-alpine .
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:latest
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:20
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:20-ubuntu
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:20-alpine
+
+
+build_cifo_18:
+  stage: build
+  extends: .build
+  only:
+    - master
+  script:
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_ubuntu --build-arg="UBUNTU_VERSION=jammy" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" --build-arg="NODE_VERSION=18.19.0" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:18-ubuntu -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:18 .
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_alpine --build-arg="ALPINE_VERSION=3.18" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:18-alpine .
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:18
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:18-ubuntu
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:18-alpine
+
+build_cifo_16:
+  stage: build
+  extends: .build
+  only:
+    - master
+  script:
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_ubuntu --build-arg="UBUNTU_VERSION=jammy" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" --build-arg="NODE_VERSION=16.20.2" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:16-ubuntu -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:16 .
+    - DOCKER_BUILDKIT=1 docker image build -f Dockerfile_alpine --build-arg="ALPINE_VERSION=3.16" --build-arg="REGISTRY_URL=registry.cifo.co.id/docker" -t ${CI_REGISTRY}/${CI_PROJECT_PATH}:16-alpine .
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:16
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:16-ubuntu
+    - docker image push ${CI_REGISTRY}/${CI_PROJECT_PATH}:16-alpine

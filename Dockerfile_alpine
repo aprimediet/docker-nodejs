@@ -1,0 +1,19 @@
+# 14.21.3 = 3.14
+# 16.20.2 = 3.16
+# 18.19.0 = 3.18
+ARG REGISTRY_URL=aprimediet
+ARG ALPINE_VERSION=3.18
+
+FROM ${REGISTRY_URL}/alpine:${ALPINE_VERSION}
+LABEL maintainer="<Muhamad Aditya Prima> aprimediet@gmail.com"
+
+# INSTALL WGET AND REQUIRED BUILD TOOLS
+RUN --mount=type=cache,target=/var/cache/apk \
+    apk add --update \
+    nodejs nodejs-dev npm
+
+# INSTALL YARN
+RUN npm i -g yarn
+
+# CLEAR CACHE
+RUN rm -rf /var/cache/apk/*

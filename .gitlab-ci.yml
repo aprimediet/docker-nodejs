@@ -1,0 +1,7 @@
+stages:
+  - triggers
+
+build_cifo:
+  stage: triggers
+  trigger:
+    include: .gitlab-ci.cifo.yml
